@@ -4,17 +4,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 
-import javax.sound.midi.InvalidMidiDataException;
-import javax.sound.midi.MidiDevice;
-import javax.sound.midi.MidiSystem;
-import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Receiver;
-import javax.sound.midi.Sequence;
-import javax.sound.midi.Sequencer;
-import javax.sound.midi.Soundbank;
-import javax.sound.midi.Synthesizer;
-import javax.sound.midi.SysexMessage;
-import javax.sound.midi.Transmitter;
+import javax.sound.midi.*;
 
 public class MidiPlayer implements Closeable {
     private static final int UNDEFINED = -1;
@@ -124,6 +114,11 @@ public class MidiPlayer implements Closeable {
 
     @Override
     public void close() {
+        if(midiOutput != null) {
+            sendReset();
+            midiOutput.close();
+        }
+
         if(sequencer != null)
             sequencer.close();
 
@@ -143,6 +138,17 @@ public class MidiPlayer implements Closeable {
                 return;
             } catch (InterruptedException ignored) {
             }
+        }
+    }
+
+    public void stopAllOscillators() throws InvalidMidiDataException {
+        ShortMessage allNoteOffMessage = new ShortMessage();
+
+        for(int i = 0; i < 16; i++){
+            allNoteOffMessage.setMessage(ShortMessage.CONTROL_CHANGE, i, 123, 0);
+            midiOutput.send(allNoteOffMessage, -1);
+            allNoteOffMessage.setMessage(ShortMessage.CONTROL_CHANGE, i, 120, 0);
+            midiOutput.send(allNoteOffMessage, -1);
         }
     }
 

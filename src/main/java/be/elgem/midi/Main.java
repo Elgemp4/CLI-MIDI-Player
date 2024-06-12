@@ -14,10 +14,13 @@ public class Main {
     private String soundBankPath = null;
     private CommandLine line;
 
+    private MidiPlayer midiPlayer;
+
     public static void main(String[] args) {
         new Main(args);
     }
     public Main(String[] args){
+        handlePrematureShutdown();
         Options options = buildOptions();
 
         try {
@@ -37,6 +40,16 @@ public class Main {
         }
 
         System.exit(0);
+    }
+
+    private void handlePrematureShutdown() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                this.midiPlayer.stopAllOscillators();
+            } catch (InvalidMidiDataException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     public void parseParamaters(String[] args, Options options) throws ParseException {
@@ -100,7 +113,7 @@ public class Main {
     }
 
     private void playSMFFiles(String[] smfFiles) throws ArrayIndexOutOfBoundsException, MidiUnavailableException {
-        MidiPlayer midiPlayer = new MidiPlayer(this.outPortID, resetType);
+        this.midiPlayer = new MidiPlayer(this.outPortID, resetType);
 
         try {
             midiPlayer.prepare(this.soundBankPath);
@@ -112,6 +125,7 @@ public class Main {
         for (String smf : smfFiles) {
             System.out.println("Playing " + smf + "...");
             try {
+                midiPlayer.stopAllOscillators();
                 midiPlayer.play(smf);
             } catch (InvalidMidiDataException | IOException e) {
                 System.err.println("The file : " + smf + " is not a valid midi file !");
