@@ -2,11 +2,13 @@ package be.elgem.midi;
 
 import org.apache.commons.cli.*;
 
+import javax.naming.InvalidNameException;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiDevice;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
 import java.io.IOException;
+import java.util.List;
 
 public class Main {
     private int outPortID = -1;
@@ -45,7 +47,9 @@ public class Main {
     private void handlePrematureShutdown() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                this.midiPlayer.stopAllOscillators();
+                if(this.midiPlayer != null && this.midiPlayer.isRunning()){
+                    this.midiPlayer.stopAllOscillators();
+                }
             } catch (InvalidMidiDataException e) {
                 e.printStackTrace();
             }
@@ -64,6 +68,15 @@ public class Main {
         if (line.hasOption('p'))
             this.outPortID = line.getParsedOptionValue("p");
 
+        if(line.hasOption('P')) {
+            try {
+                this.outPortID = this.getDeviceID(line.getParsedOptionValue("P"));
+            } catch (InvalidNameException e) {
+                System.err.println(e.getMessage());
+                System.exit(1);
+            }
+        }
+
         // Get SoundFont path
         if (line.hasOption('s'))
             this.soundBankPath = line.getParsedOptionValue("s");
@@ -80,6 +93,8 @@ public class Main {
         options.addOption("a", false, "when supplied with -l, list all MIDI devices");
         options.addOption(Option.builder("p").hasArg(true).type(Integer.class)
                 .desc("Output port (index shown with -l option)").build());
+        options.addOption(Option.builder("P").hasArg(true).type(String.class)
+                .desc("Output device name (name shown with -l option)").build());
         options.addOption(Option.builder("s").hasArg(true).type(String.class)
                 .desc("Soundfont (path to .sf2 file)").build());
         options.addOption(Option.builder("r").hasArg(true).type(String.class)
@@ -89,25 +104,37 @@ public class Main {
     }
 
     public void fetchMidiDevices(boolean dumpAll) {
-        MidiDevice.Info[] devInfo = MidiSystem.getMidiDeviceInfo();
-        for (int i = 0; i < devInfo.length; i++) {
-            MidiDevice.Info nfo = devInfo[i];
-            printMidiDevice(nfo, i, dumpAll);
+        List<MidiDevice> devices = getMidiDevices();
+        for (int i = 0; i < devices.size(); i++) {
+            printMidiDevice(devices.get(i), i, dumpAll);
         }
     }
 
-    private void printMidiDevice(MidiDevice.Info nfo, int index, boolean dumpAll){
-        MidiDevice device;
-        try {
-            device = MidiSystem.getMidiDevice(nfo);
-        } catch (MidiUnavailableException e) {
-            System.out.println("Dev " + index + " unavailable");
-            return;
+    private List<MidiDevice> getMidiDevices() {
+        MidiDevice.Info[] devInfo = MidiSystem.getMidiDeviceInfo();
+        List<MidiDevice> devices = new java.util.ArrayList<>();
+
+        for (MidiDevice.Info nfo : devInfo) {
+            try{
+                MidiDevice device = MidiSystem.getMidiDevice(nfo);
+
+                devices.add(device);
+            } catch (MidiUnavailableException ignored){}
         }
+
+        return devices;
+    }
+
+    private String getDeviceFullName(MidiDevice.Info nfo){
+        return nfo.getVendor() + " " + nfo.getName() + " " + nfo.getVersion();
+    }
+
+    private void printMidiDevice(MidiDevice device, int index, boolean dumpAll){
+        MidiDevice.Info nfo = device.getDeviceInfo();
 
         int maxRx = device.getMaxReceivers();
         if (dumpAll || maxRx != 0) {
-            System.out.println("Dev " + index + " " + nfo.getVendor() + " " + nfo.getName() + " " + nfo.getVersion());
+            System.out.println("Dev " + index + " " + getDeviceFullName(nfo));
             System.out.println("    " + nfo.getDescription());
         }
     }
@@ -132,5 +159,29 @@ public class Main {
             }
         }
         midiPlayer.close();
+    }
+
+    private int getDeviceID(String deviceName) throws InvalidNameException {
+        List<MidiDevice> devices = getMidiDevices();
+        int index = -1;
+
+        for (int i = 0; i < devices.size(); i++) {
+            MidiDevice device = devices.get(i);
+            MidiDevice.Info nfo = device.getDeviceInfo();
+
+            if(device.getMaxReceivers() == 0) continue;
+
+            if (getDeviceFullName(nfo).contains(deviceName)) {
+                if(index != -1)
+                    throw new InvalidNameException(deviceName + " is ambiguous. Please provide a more specific name.");
+
+                index = i;
+            }
+        }
+
+        if(index != -1)
+            return index;
+
+        throw new InvalidNameException("The MIDI device with name \""+ deviceName  + "\" does not exist. Use -l to list available devices.");
     }
 }

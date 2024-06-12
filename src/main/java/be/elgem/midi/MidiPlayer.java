@@ -142,6 +142,9 @@ public class MidiPlayer implements Closeable {
     }
 
     public void stopAllOscillators() throws InvalidMidiDataException {
+        if(midiOutput == null)
+            return;
+
         ShortMessage allNoteOffMessage = new ShortMessage();
 
         for(int i = 0; i < 16; i++){
@@ -172,5 +175,9 @@ public class MidiPlayer implements Closeable {
         } else {
             throw new RuntimeException("Unknown reset sequence specified");
         }
+    }
+
+    public boolean isRunning() {
+        return sequencer.isRunning();
     }
 }
