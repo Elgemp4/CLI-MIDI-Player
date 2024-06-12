@@ -1,4 +1,3 @@
-// Plays standard MIDI file after resetting the synthesizer
 package be.elgem.midi;
 
 import java.io.Closeable;
@@ -90,14 +89,14 @@ public class MidiPlayer implements Closeable {
     private void createSequencer() throws MidiUnavailableException {
         sequencer = MidiSystem.getSequencer();
 
-        detachExistingTransmitter();
+        detachExistingTransmitters();
 
         connectSequencerToDevice();
 
         sequencer.open();
     }
 
-    private void detachExistingTransmitter() {
+    private void detachExistingTransmitters() {
         java.util.List<Transmitter> existingTransmitters = sequencer.getTransmitters();
         existingTransmitters.forEach(Transmitter::close);
     }
@@ -110,29 +109,17 @@ public class MidiPlayer implements Closeable {
 
     public void play(String path) throws InvalidMidiDataException, IOException {
         File midFile = new File(path);
-        Sequence midSeq = MidiSystem.getSequence(midFile);
-        if (resetSequence != null) {
-            sendReset();
-        }
-        sequencer.setSequence(midSeq);
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-        }
-        long us = sequencer.getMicrosecondLength();
+        Sequence musicSequence = MidiSystem.getSequence(midFile);
+
+        sendReset();
+
+        sequencer.setSequence(musicSequence);
+
         sequencer.start();
-        try {
-            Thread.sleep(us / 1000);
-        } catch (InterruptedException ignored) {
-        } finally {
-            while (sequencer.isRunning()) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                }
-            }
-            sequencer.stop();
-        }
+
+        while (sequencer.isRunning()) {}
+        sequencer.stop();
+
     }
 
     @Override
