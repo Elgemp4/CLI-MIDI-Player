@@ -1,7 +1,3 @@
-Sure! Here is a sample README for your "CLI-MIDI-Player" program:
-
----
-
 # CLI-MIDI-Player
 
 CLI-MIDI-Player is a command-line interface (CLI) program that allows you to play MIDI files easily from your terminal. With features to list available MIDI files, play MIDI files by index or name, specify a soundbank, and reset the playback, CLI-MIDI-Player provides a straightforward and efficient way to enjoy your MIDI music.
@@ -81,7 +77,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Thanks to [tomari](https://github.com/tomari) the original coder of the project : [Old Project](https://github.com/tomari/PlaySMF)
-
----
-
-Feel free to customize and expand this README as needed. If you have additional features or information you'd like to include, you can add those sections accordingly.
