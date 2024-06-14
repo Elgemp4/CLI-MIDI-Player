@@ -77,3 +77,49 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Thanks to [tomari](https://github.com/tomari) the original coder of the project : [Old Project](https://github.com/tomari/PlaySMF)
+
+## Building the Project
+
+To build the CLI-MIDI-Player project, follow these steps:
+
+### Prerequisites
+
+- Ensure you have [Maven](https://maven.apache.org/install.html) installed on your system.
+- Download and install [Launch4j](http://launch4j.sourceforge.net/) to create a Windows executable wrapper.
+
+### Steps to Build
+
+1. **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/yourusername/cli-midi-player.git
+    cd cli-midi-player
+    ```
+
+2. **Package the project using Maven:**
+
+    Run the following command to package the project into a JAR file:
+
+    ```bash
+    mvn package
+    ```
+
+    This will generate a `target/cli-midi-player-<version>.jar` file.
+
+3. **Create an executable wrapper using Launch4j:**
+
+    - Open Launch4j.
+    - Load the `launch4j.xml` configuration file included in the repository.
+    - Ensure that the `JAR` file path in the configuration points to the generated JAR file (`target/cli-midi-player-<version>.jar`).
+    - Configure other settings as needed, such as the output executable name and icon.
+    - Click on the `Build Wrapper` button to create the `.exe` file.
+
+4. **Run the executable:**
+
+    After creating the `.exe` file, you can run it directly from your terminal:
+
+    ```bash
+    cli-midi-player.exe [OPTIONS] [MIDI_FILES...]
+    ```
+
+Follow these steps to successfully build and package the CLI-MIDI-Player project into a Windows executable.
