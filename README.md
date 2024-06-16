@@ -5,8 +5,8 @@ CLI-MIDI-Player is a command-line interface (CLI) program that allows you to pla
 ## Features
 
 - List available MIDI files
-- Play MIDI files by index
-- Play MIDI files by name
+- Choose the playback device by name or by index
+- Play a list of MIDI files 
 - Specify a soundbank for playback
 - Reset the playback method
 
@@ -19,8 +19,8 @@ cli-midi-player.exe [OPTIONS] [MIDI_FILES...]
 ### Options
 
 - `-l` : List all available MIDI files.
-- `-p <index>` : Play the MIDI file by the given index.
-- `-P <name>` : Play the MIDI file by the given name.
+- `-p <index>` : Play the MIDI file on the device with the given index.
+- `-P <name>` : Play the MIDI file on the device with the given name.
 - `-s <soundbank>` : Specify the soundbank to be used for playback.
 - `-r` : Reset the playback method.
 
@@ -35,12 +35,12 @@ cli-midi-player.exe [OPTIONS] [MIDI_FILES...]
 cli-midi-player.exe -l
 ```
 
-#### Play a MIDI file by index
+#### Play a MIDI file on a specific device by index
 ```bash
 cli-midi-player.exe -p 1 example.mid
 ```
 
-#### Play a MIDI file by name
+#### Play a MIDI file on a specific device by name
 ```bash
 cli-midi-player.exe -P "Unknow vendor USB MIDI Interface 2.84" example.mid
 ```
